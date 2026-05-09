@@ -1,0 +1,105 @@
+// Eraser ERD — Instagram Thrift Creator Store
+
+// ─── Entities ───────────────────────────────────────────
+
+Customer [icon: user] {
+  customer_id UUID PK
+  name string
+  phone string
+  email string
+  instagram_handle string
+  address text
+  city string
+  state string
+  pincode string
+  created_at timestamp
+}
+
+Product [icon: package] {
+  product_id UUID PK
+  title string
+  description text
+  product_type enum // 'thrifted' or 'handmade'
+  category string // e.g. tops, bags, accessories
+  price decimal
+  condition enum // 'new', 'like_new', 'good', 'fair' — relevant for thrifted
+  size string // optional, e.g. S, M, L, 28, freesize
+  color string
+  image_url string
+  created_at timestamp
+}
+
+ThriftedDetail [icon: tag] {
+  thrift_detail_id UUID PK
+  product_id UUID FK
+  is_unique boolean // always true for thrifted
+  source_description string // e.g. "vintage market, Colaba"
+  brand string
+}
+
+HandmadeDetail [icon: scissors] {
+  handmade_detail_id UUID PK
+  product_id UUID FK
+  material string
+  made_to_order boolean
+  production_time_days int
+}
+
+Inventory [icon: database] {
+  inventory_id UUID PK
+  product_id UUID FK
+  quantity_available int
+  quantity_sold int
+  last_updated timestamp
+}
+
+Order [icon: shopping-cart] {
+  order_id UUID PK
+  customer_id UUID FK
+  order_date timestamp
+  total_amount decimal
+  order_status enum // 'pending', 'confirmed', 'shipped', 'delivered', 'cancelled'
+  notes text
+}
+
+OrderItem [icon: list] {
+  order_item_id UUID PK
+  order_id UUID FK
+  product_id UUID FK
+  quantity int
+  unit_price decimal
+  subtotal decimal
+}
+
+Payment [icon: credit-card] {
+  payment_id UUID PK
+  order_id UUID FK
+  amount decimal
+  payment_method enum // 'UPI', 'bank_transfer', 'cash', 'card'
+  payment_status enum // 'pending', 'paid', 'failed', 'refunded'
+  transaction_id string
+  paid_at timestamp
+}
+
+Shipment [icon: truck] {
+  shipment_id UUID PK
+  order_id UUID FK
+  courier_name string
+  tracking_number string
+  shipped_at timestamp
+  estimated_delivery date
+  delivered_at timestamp
+  shipment_status enum // 'not_shipped', 'in_transit', 'out_for_delivery', 'delivered'
+  delivery_address text
+}
+
+// ─── Relationships ───────────────────────────────────────
+
+Customer.customer_id < Order.customer_id
+Order.order_id < OrderItem.order_id
+Product.product_id < OrderItem.product_id
+Product.product_id - ThriftedDetail.product_id
+Product.product_id - HandmadeDetail.product_id
+Product.product_id - Inventory.product_id
+Order.order_id - Payment.order_id
+Order.order_id - Shipment.order_id
